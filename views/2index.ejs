@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+  <head>
+    <title>나의 쇼핑몰</title>
+    <style>
+
+
+      .product-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .product-card {
+        border: 1px solid #ccc;
+        margin: 10px;
+        padding: 10px;
+        width: 200px;
+        text-align: center;
+      }
+      .product-card img {
+        width: 100%;
+      }
+      .product-card button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px 0;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+      }
+      .product-card button:hover {
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="create-todo-form" method="post">
+      <input type="text" name="author" placeholder="작성자" required />
+      <input type="text" name="title" placeholder="제목" required />
+      <input type="text" name="content" placeholder="내용" required />
+      <input type="password" name="password" placeholder="비밀번호" required />
+      <select name="status">
+        <option value="판매중">판매중</option>
+        <option value="판매완료">판매완료</option>
+      </select>
+      <button type="submit">생성하기</button>
+    </form> 
+
+    <div class="product-container">
+      <% todos.forEach(function(todo) { %>
+        <form class="todo-form" action="/todo/<%= todo._id %>" method="post">
+          <div class="product-card">
+            <input type="text" name="author" value="<%= todo.author %>" required />
+            <input type="text" name="title" value="<%= todo.title %>" required />
+            <input type="text" name="content" value="<%= todo.content %>" required />
+            <select name="status">
+              <% ['판매중', '판매완료'].forEach(function(status) { %>
+                <option value="<%= status %>" <%= todo.status === status ? 'selected' : '' %>><%= status %></option>
+              <% }); %>
+            </select>
+            <button type="submit">수정하기</button>
+            <button type="button" onclick="deleteTodo('<%= todo._id %>')">삭제하기</button>
+          </div>
+        </form>
+      <% }); %>
+    </div>
+    <script>
+ document.getElementById('create-todo-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const password = prompt('비밀번호를 입력하세요.');
+        const author = this.querySelector('input[name="author"]').value;
+        const title = this.querySelector('input[name="title"]').value;
+        const content = this.querySelector('input[name="content"]').value;
+        const status = this.querySelector('select[name="status"]').value;
+
+        if (password) {
+          fetch('/todos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password, author, title, content, status }),
+          }).then(res => res.json())
+            .then(data => {
+              alert(data.message);
+              location.reload();
+            });
+        }
+      });
+
+     document.querySelectorAll('.todo-form').forEach(function(form) {
+         form.addEventListener('submit', function(event) {
+           event.preventDefault();
+
+      const password = prompt('비밀번호를 입력하세요.');
+      const title = form.querySelector('input[name="title"]').value;
+      const content = form.querySelector('input[name="content"]').value;
+      const status = form.querySelector('select[name="status"]').value;
+
+      if (password) {
+        fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password, title, content, status }),
+        }).then(res => res.json())
+          .then(data => {
+            alert(data.message);
+          });
+      }
+    });
+  });
+
+      function deleteTodo(id) {
+        const password = prompt('비밀번호를 입력하세요.');
+    
+        if (password && confirm('정말로 삭제하시겠습니까?')) {
+          fetch(`/todos/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password }),
+          }).then(res => res.json())
+            .then(data => {
+              if (data.message === '삭제 성공') {
+                alert('삭제가 성공했습니다.');
+                location.href = '/';
+              } else {
+                alert(data.message);
+              }
+            });
+        }
+      }
+    </script>
+  </body>
+</html>
